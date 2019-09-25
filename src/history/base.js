@@ -14,7 +14,7 @@ import {
 import { NavigationDuplicated } from './errors'
 
 export class History {
-  router: Router
+  router: Router //宿主 router
   base: string
   current: Route
   pending: ?Route
@@ -32,7 +32,7 @@ export class History {
   +getCurrentLocation: () => string
 
   constructor (router: Router, base: ?string) {
-    this.router = router
+    this.router = router //router实例
     this.base = normalizeBase(base)
     // start with a route object that stands for "nowhere"
     this.current = START

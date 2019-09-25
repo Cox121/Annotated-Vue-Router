@@ -22,10 +22,12 @@ export function createRouteMap (
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
 
   routes.forEach(route => {
+    //addRouteRecord 主要处理了将用户配置的 route 转换成 RouteRecord ， 并且生成pathList pathMap nameMap记录供后续使用
     addRouteRecord(pathList, pathMap, nameMap, route)
   })
 
   // ensure wildcard routes are always at the end
+  //<:?> 为什么通配符路由要放在最后面？ 官网文档也有提及 https://router.vuejs.org/zh/guide/essentials/dynamic-matching.html#%E6%8D%95%E8%8E%B7%E6%89%80%E6%9C%89%E8%B7%AF%E7%94%B1%E6%88%96-404-not-found-%E8%B7%AF%E7%94%B1
   for (let i = 0, l = pathList.length; i < l; i++) {
     if (pathList[i] === '*') {
       pathList.push(pathList.splice(i, 1)[0])
@@ -36,6 +38,7 @@ export function createRouteMap (
 
   if (process.env.NODE_ENV === 'development') {
     // warn if routes do not include leading slashes
+    //<:w> leading slashes - 前斜导线
     const found = pathList
     // check for missing leading slash
       .filter(path => path && path.charAt(0) !== '*' && path.charAt(0) !== '/')
@@ -74,7 +77,7 @@ function addRouteRecord (
 
   const pathToRegexpOptions: PathToRegexpOptions =
     route.pathToRegexpOptions || {}
-  const normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict)
+  const normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict)//parent参数是子路由才会用到的参数，在子路由路径前面拼接上parent的路径组成完成路径
 
   if (typeof route.caseSensitive === 'boolean') {
     pathToRegexpOptions.sensitive = route.caseSensitive
@@ -82,8 +85,8 @@ function addRouteRecord (
 
   const record: RouteRecord = {
     path: normalizedPath,
-    regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
-    components: route.components || { default: route.component },
+    regex: compileRouteRegex(normalizedPath, pathToRegexpOptions), // 用于匹配path的正则
+    components: route.components || { default: route.component }, // 路由的component选项最终也会被转换成这种写法
     instances: {},
     name,
     parent,
@@ -91,12 +94,12 @@ function addRouteRecord (
     redirect: route.redirect,
     beforeEnter: route.beforeEnter,
     meta: route.meta || {},
-    props:
+    props: // 路由组件传参
       route.props == null
         ? {}
         : route.components
           ? route.props
-          : { default: route.props }
+          : { default: route.props } //需要与components配置项对应
   }
 
   if (route.children) {
@@ -129,12 +132,14 @@ function addRouteRecord (
     })
   }
 
+  //在pathList 和 pathMap里生成记录
   if (!pathMap[record.path]) {
     pathList.push(record.path)
     pathMap[record.path] = record
   }
 
   if (route.alias !== undefined) {
+    //处理配置了alias的路径记录， 把一个alias视为一条独立的不同名路由
     const aliases = Array.isArray(route.alias) ? route.alias : [route.alias]
     for (let i = 0; i < aliases.length; ++i) {
       const alias = aliases[i]
@@ -162,6 +167,7 @@ function addRouteRecord (
     }
   }
 
+  //在nameMap里生成记录
   if (name) {
     if (!nameMap[name]) {
       nameMap[name] = record
@@ -179,6 +185,8 @@ function compileRouteRegex (
   path: string,
   pathToRegexpOptions: PathToRegexpOptions
 ): RouteRegExp {
+  //Regexp 是一个开源库 https://github.com/pillarjs/path-to-regexp 是 vue-router 的路径匹配引擎
+  //作用是将路径编译成正则表达式，并且解析出其中的一些规定了特定意义的字符，比如 /test/:id 中的:id
   const regex = Regexp(path, [], pathToRegexpOptions)
   if (process.env.NODE_ENV !== 'production') {
     const keys: any = Object.create(null)

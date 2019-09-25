@@ -107,6 +107,8 @@ function ensureSlash (): boolean {
 }
 
 export function getHash (): string {
+  //获取url中的对应路由path的信息， 处理了query和hash会被decode而path不会的问题
+  
   // We can't use window.location.hash here because it's not
   // consistent across browsers - Firefox will pre-decode it!
   let href = window.location.href

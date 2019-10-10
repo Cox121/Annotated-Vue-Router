@@ -13,6 +13,7 @@ export function normalizeLocation (
   append: ?boolean,
   router: ?VueRouter
 ): Location {
+  //比如初始化的时候传入的raw是 '/'
   let next: Location = typeof raw === 'string' ? { path: raw } : raw
   // named target
   if (next._normalized) {
@@ -27,6 +28,7 @@ export function normalizeLocation (
   }
 
   // relative params
+  // <:?> 目前认为是为了处理push的时候没有传path或者name的情况，具体有待研究
   if (!next.path && next.params && current) {
     next = extend({}, next)
     next._normalized = true
@@ -52,7 +54,7 @@ export function normalizeLocation (
   const query = resolveQuery(
     parsedPath.query,
     next.query,
-    router && router.options.parseQuery
+    router && router.options.parseQuery // router.options.parseQuery 自定义query的解析规则
   )
 
   let hash = next.hash || parsedPath.hash

@@ -15,6 +15,7 @@ const encode = str => encodeURIComponent(str)
 
 const decode = decodeURIComponent
 
+//处理解析出来的query,如'/a/b?c=1&d=2'中的'c=1&d=2'部分
 export function resolveQuery (
   query: ?string,
   extraQuery: Dictionary<string> = {},
@@ -34,6 +35,7 @@ export function resolveQuery (
   return parsedQuery
 }
 
+//默认的query解析方法，可在router.options.parseQuery中自定义
 function parseQuery (query: string): Dictionary<string> {
   const res = {}
 
@@ -47,9 +49,10 @@ function parseQuery (query: string): Dictionary<string> {
     const parts = param.replace(/\+/g, ' ').split('=')
     const key = decode(parts.shift())
     const val = parts.length > 0
-      ? decode(parts.join('='))
+      ? decode(parts.join('=')) // <:?>这里为什么要做join('=')处理
       : null
 
+      // 存在多个则转成数组
     if (res[key] === undefined) {
       res[key] = val
     } else if (Array.isArray(res[key])) {

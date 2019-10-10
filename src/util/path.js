@@ -19,11 +19,13 @@ export function resolvePath (
   // remove trailing segment if:
   // - not appending
   // - appending to trailing slash (last segment is empty)
+  // 路由添加规则默认都是替换模式，在增长模式下，默认路由——'/'也会执行替换模式的逻辑
   if (!append || !stack[stack.length - 1]) {
     stack.pop()
   }
 
   // resolve relative path
+  // 处理相对路由 如 push('../xx')
   const segments = relative.replace(/^\//, '').split('/')
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i]
@@ -35,6 +37,7 @@ export function resolvePath (
   }
 
   // ensure leading slash
+  // 如果0位置没有''， 那么在后续的join中不会被加入'/'
   if (stack[0] !== '') {
     stack.unshift('')
   }
@@ -47,6 +50,7 @@ export function parsePath (path: string): {
   query: string;
   hash: string;
 } {
+  // 解析路径，返回各个部分组合成的对象
   let hash = ''
   let query = ''
 

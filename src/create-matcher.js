@@ -45,6 +45,8 @@ export function createMatcher (
         location.params = {}
       }
 
+      // 当两个路由有相同得params时，在跳转过程中会把老的parmas带过去，比如从/a/:b => /b/:b
+      // <?:> 目前还不太明白这么处理是为了解决什么问题
       if (currentRoute && typeof currentRoute.params === 'object') {
         for (const key in currentRoute.params) {
           if (!(key in location.params) && paramNames.indexOf(key) > -1) {

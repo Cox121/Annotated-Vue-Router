@@ -15,6 +15,7 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
       // we are not using Vue's default async resolving mechanism because
       // we want to halt the navigation until the incoming component has been
       // resolved.
+      // 如果它是一个函数并且没有附加cid，那么假设它是一个异步组件解析函数。我们没有使用Vue的默认异步解析机制，因为我们希望在解析传入组件之前停止导航。
       if (typeof def === 'function' && def.cid === undefined) {
         hasAsync = true
         pending++
@@ -73,6 +74,7 @@ export function flatMapComponents (
   matched: Array<RouteRecord>,
   fn: Function
 ): Array<?Function> {
+  // 处理matched中每一项的组件中定义的守卫，并且按顺序拍平
   return flatten(matched.map(m => {
     return Object.keys(m.components).map(key => fn(
       m.components[key],

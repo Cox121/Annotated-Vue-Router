@@ -18,6 +18,7 @@ export function createRoute (
     query = clone(query)
   } catch (e) {}
 
+  // 将 location 和 record中的信息整合成一条route，也就是vue组件中的$route
   const route: Route = {
     name: location.name || (record && record.name),
     meta: (record && record.meta) || {},
@@ -25,11 +26,11 @@ export function createRoute (
     hash: location.hash || '',
     query,
     params: location.params || {},
-    fullPath: getFullPath(location, stringifyQuery),
-    matched: record ? formatMatch(record) : []
+    fullPath: getFullPath(location, stringifyQuery), //完成解析后的 URL，包含查询参数和 hash 的完整路径
+    matched: record ? formatMatch(record) : [] //一个数组，包含当前路由的所有嵌套路径片段的路由记录，倒序（由子到父，一直到顶）
   }
   if (redirectedFrom) {
-    route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery)
+    route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery) 
   }
   return Object.freeze(route)
 }

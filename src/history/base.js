@@ -125,6 +125,9 @@ export class History {
       return abort(new NavigationDuplicated(route))
     }
 
+    // updated 新路由中跟老路由相同的部分matched记录
+    // deactivated 老路由中跟新路由不相同部分matched记录
+    // activated 新路由中跟老路由不相同的部分matched记录
     const { updated, deactivated, activated } = resolveQueue(
       this.current.matched,
       route.matched
@@ -132,13 +135,13 @@ export class History {
 
     const queue: Array<?NavigationGuard> = [].concat(
       // in-component leave guards
-      extractLeaveGuards(deactivated),
+      extractLeaveGuards(deactivated), // 返回值为 所有跟deactivated中记录相关组件内注册的 beforeRouteLeave 钩子函数组成的一个数组
       // global before hooks
       this.router.beforeHooks,
       // in-component update hooks
       extractUpdateHooks(updated),
       // in-config enter guards
-      activated.map(m => m.beforeEnter),
+      activated.map(m => m.beforeEnter), //在路由上定义的beforeEnter守卫钩子
       // async components
       resolveAsyncComponents(activated)
     )
@@ -149,6 +152,7 @@ export class History {
         return abort()
       }
       try {
+        // to from next
         hook(route, current, (to: any) => {
           if (to === false || isError(to)) {
             // next(false) -> abort navigation, ensure current URL
@@ -252,6 +256,7 @@ function resolveQueue (
   }
 }
 
+//extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
 function extractGuards (
   records: Array<RouteRecord>,
   name: string,
@@ -259,8 +264,13 @@ function extractGuards (
   reverse?: boolean
 ): Array<?Function> {
   const guards = flatMapComponents(records, (def, instance, match, key) => {
-    const guard = extractGuard(def, name)
+    // def 组件
+    // instance
+    // match records中的一项
+    // key 组件在components中的key
+    const guard = extractGuard(def, name) //取出守卫
     if (guard) {
+      // 会将guard数组的每一项转换成 guard.apply(instance, arguments)
       return Array.isArray(guard)
         ? guard.map(guard => bind(guard, instance, match, key))
         : bind(guard, instance, match, key)
@@ -281,7 +291,7 @@ function extractGuard (
 }
 
 function extractLeaveGuards (deactivated: Array<RouteRecord>): Array<?Function> {
-  return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
+  return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true /**决定返回的数组是否进行倒序处理 */)
 }
 
 function extractUpdateHooks (updated: Array<RouteRecord>): Array<?Function> {
@@ -289,6 +299,7 @@ function extractUpdateHooks (updated: Array<RouteRecord>): Array<?Function> {
 }
 
 function bindGuard (guard: NavigationGuard, instance: ?_Vue): ?NavigationGuard {
+  // 将守卫的作用域限制到组件实例上
   if (instance) {
     return function boundRouteGuard () {
       return guard.apply(instance, arguments)
